@@ -1,15 +1,38 @@
-# License files
-cutpro_mini.license.code.txt
-cutpro_mini.license.token.json
+# Source Code Files (Keep Private)
+auto.py
+auto copy.py
+updater.py
+update_integration_example.py
+CutPro.spec
+version.txt
+test_update.py
+create_release_instructions.md
 
-# IDE and build folders
-.claude/
+# Build Files
+build/
+*.pyc
+*.pyo
 __pycache__/
 
-# Update system files
+# Development Files
+aria2c.exe
+setup.bat
+icon.ico
+icon.png
 *.backup
-gh_windows_amd64.msi
 
-# dist folder
+# License files (Keep Private)
+cutpro_mini.license.code.txt
+cutpro_mini.license.token.json
 dist/cutpro_mini.license.code.txt
 dist/cutpro_mini.license.token.json
+
+# IDE and temporary files
+.claude/
+gh_windows_amd64.msi
+
+# Only keep in repository:
+# README.md
+# requirements.txt
+# dist/CutPro.exe
+# dist/FFmpeg/
