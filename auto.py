@@ -32,6 +32,13 @@ import urllib.error
 import time
 from concurrent.futures import ThreadPoolExecutor
 import io
+from packaging import version
+
+# Auto-updater imports
+try:
+    from updater import AutoUpdater
+except ImportError:
+    AutoUpdater = None
 
 # GPU detection and configuration
 def detect_gpu_encoders(ffmpeg_path="ffmpeg"):
@@ -1380,12 +1387,24 @@ class CutPro:
         self.remaining_days = 0
         self.permanent_status = None  # Store permanent status message
 
+        # Initialize auto-updater
+        self.update_manager = None
+        if AutoUpdater:
+            try:
+                current_version = self.get_current_version()
+                self.update_manager = AutoUpdater(current_version=current_version)
+            except Exception as e:
+                debug_log(f"Failed to initialize auto-updater: {e}")
+
         # Create UI with license check
         self.create_ui(outer_frame)
         
         # Check FFmpeg availability after user sees the main tool
         self.root.after(5000, self.check_ffmpeg_setup)
-        
+
+        # Silent update check on startup (after UI is loaded)
+        self.root.after(3000, self.silent_update_check)
+
         # Ensure taskbar icon is set after UI is created
         self.root.after(1000, self.ensure_taskbar_icon)
     
@@ -1436,6 +1455,240 @@ class CutPro:
         
         debug_log("No icon files found anywhere!")
         return None
+
+    def get_current_version(self):
+        """Get current version from version.txt file"""
+        try:
+            if os.path.exists("version.txt"):
+                with open("version.txt", 'r') as f:
+                    return f.read().strip()
+        except Exception as e:
+            debug_log(f"Error reading version: {e}")
+        return "1.0.0"  # Default version
+
+    def silent_update_check(self):
+        """Silent update check on startup"""
+        if not self.update_manager:
+            return
+
+        def check_updates():
+            try:
+                debug_log("Checking for updates silently...")
+                update_info = self.update_manager.check_for_updates()
+
+                if update_info.get("error"):
+                    debug_log(f"Update check failed: {update_info['error']}")
+                    return
+
+                if update_info.get("update_available"):
+                    debug_log(f"Update found: v{update_info['latest_version']}")
+                    # Show automatic update dialog
+                    self.root.after(0, lambda: self.show_automatic_update_dialog(update_info))
+                else:
+                    debug_log("No updates available")
+
+            except Exception as e:
+                debug_log(f"Silent update check error: {e}")
+
+        thread = threading.Thread(target=check_updates, daemon=True)
+        thread.start()
+
+    def show_automatic_update_dialog(self, update_info):
+        """Show automatic update dialog similar to setup dialog"""
+        latest_version = update_info["latest_version"]
+
+        # Create the update dialog similar to FFmpeg setup dialog
+        dialog = ctk.CTkToplevel(self.root)
+        dialog.title("Cut Pro Update Available")
+        dialog.geometry("500x300")
+        dialog.resizable(False, False)
+        dialog.grab_set()
+        dialog.transient(self.root)
+
+        # Center the dialog
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() // 2) - (500 // 2)
+        y = (dialog.winfo_screenheight() // 2) - (300 // 2)
+        dialog.geometry(f"500x300+{x}+{y}")
+
+        # Set icon if available
+        if hasattr(self, 'icon_path') and self.icon_path:
+            try:
+                dialog.iconbitmap(self.icon_path)
+            except:
+                pass
+
+        # Main frame
+        main_frame = ctk.CTkFrame(dialog, fg_color="#2c3e50")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Title
+        title_label = ctk.CTkLabel(
+            main_frame,
+            text="Cut Pro Update Available",
+            font=ctk.CTkFont(size=20, weight="bold"),
+            text_color="white"
+        )
+        title_label.pack(pady=(20, 15))
+
+        # Update info
+        info_text = f"A new version of Cut Pro is available!\n\n"
+        info_text += f"Current Version: {self.update_manager.current_version}\n"
+        info_text += f"New Version: {latest_version}\n\n"
+        info_text += "The update will be downloaded and installed automatically."
+
+        info_label = ctk.CTkLabel(
+            main_frame,
+            text=info_text,
+            font=ctk.CTkFont(size=12),
+            text_color="white",
+            justify="center"
+        )
+        info_label.pack(pady=15)
+
+        # Progress frame (initially hidden)
+        progress_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+
+        status_label = ctk.CTkLabel(
+            progress_frame,
+            text="Downloading update...",
+            font=ctk.CTkFont(size=12),
+            text_color="white"
+        )
+        status_label.pack(pady=5)
+
+        progress_label = ctk.CTkLabel(
+            progress_frame,
+            text="0%",
+            font=ctk.CTkFont(size=11),
+            text_color="#3498db"
+        )
+        progress_label.pack(pady=2)
+
+        # Button frame
+        button_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        button_frame.pack(side="bottom", fill="x", pady=(20, 10))
+
+        # Update button
+        def start_update():
+            update_btn.configure(state="disabled", text="Updating...")
+            later_btn.configure(state="disabled")
+            progress_frame.pack(pady=15)
+            self.perform_automatic_update(update_info, status_label, progress_label, dialog)
+
+        update_btn = ctk.CTkButton(
+            button_frame,
+            text="Update Now",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            fg_color="#2ecc71",
+            hover_color="#27ae60",
+            width=120,
+            height=35,
+            command=start_update
+        )
+        update_btn.pack(side="left", padx=(50, 10))
+
+        # Later button
+        later_btn = ctk.CTkButton(
+            button_frame,
+            text="Later",
+            font=ctk.CTkFont(size=12),
+            fg_color="#7f8c8d",
+            hover_color="#6c7b7b",
+            width=120,
+            height=35,
+            command=dialog.destroy
+        )
+        later_btn.pack(side="right", padx=(10, 50))
+
+    def perform_automatic_update(self, update_info, status_label, progress_label, dialog):
+        """Perform automatic update with progress"""
+        def update_progress(progress, status_text):
+            status_label.configure(text=status_text)
+            progress_label.configure(text=f"{progress:.1f}%")
+            dialog.update()
+
+        def perform_update():
+            try:
+                # Find executable asset
+                executable_asset = self.update_manager.find_executable_asset(
+                    update_info.get("assets", [])
+                )
+
+                if not executable_asset:
+                    raise Exception("Could not find executable in release assets")
+
+                # Download with progress
+                def progress_callback(progress):
+                    self.root.after(0, lambda: update_progress(progress, "Downloading update..."))
+
+                temp_file_path = self.update_manager.download_update(
+                    executable_asset, progress_callback
+                )
+
+                if not temp_file_path:
+                    raise Exception("Failed to download update")
+
+                self.root.after(0, lambda: update_progress(100, "Installing update..."))
+
+                # Apply update
+                target_path = os.path.join("dist", "CutPro.exe")
+                if self.update_manager.apply_update(temp_file_path, target_path):
+                    # Update version file
+                    self.save_new_version(update_info["latest_version"])
+
+                    # Show completion and restart
+                    self.root.after(0, lambda: self.complete_automatic_update(dialog))
+                else:
+                    raise Exception("Failed to apply update")
+
+            except Exception as e:
+                self.root.after(0, lambda: self.handle_update_error(dialog, str(e)))
+
+        # Start update in thread
+        update_thread = threading.Thread(target=perform_update, daemon=True)
+        update_thread.start()
+
+    def complete_automatic_update(self, dialog):
+        """Complete automatic update and restart"""
+        dialog.destroy()
+
+        # Show completion message
+        result = messagebox.showinfo("Update Complete",
+                     "Update installed successfully!\n"
+                     "The application will now restart.")
+
+        # Restart automatically
+        self.restart_application()
+
+    def handle_update_error(self, dialog, error_msg):
+        """Handle update error"""
+        dialog.destroy()
+        messagebox.showerror("Update Failed",
+                           f"Failed to update Cut Pro:\n{error_msg}\n\n"
+                           "You can continue using the current version.")
+
+    def perform_update_with_progress(self, update_info):
+        """Legacy method for manual updates (kept for compatibility)"""
+        self.show_automatic_update_dialog(update_info)
+
+    def save_new_version(self, new_version):
+        """Save new version to version.txt"""
+        try:
+            with open("version.txt", 'w') as f:
+                f.write(new_version)
+        except Exception as e:
+            debug_log(f"Error saving new version: {e}")
+
+    def restart_application(self):
+        """Restart the application"""
+        try:
+            # Close current instance
+            self.root.quit()
+            # Restart
+            os.execv(sys.executable, ['python'] + sys.argv)
+        except Exception as e:
+            debug_log(f"Error restarting application: {e}")
     
     def set_main_window_icon(self):
         """Set main window icon for both window and taskbar - enhanced for compiled exe"""

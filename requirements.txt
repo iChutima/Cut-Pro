@@ -12,6 +12,9 @@ certifi>=2023.7.22
 charset-normalizer>=3.2.0
 idna>=3.4
 
+# Auto-Update Dependencies
+packaging>=21.0.0
+
 # Python Standard Library (included with Python)
 # json - JSON handling for license tokens
 # uuid - Machine ID generation

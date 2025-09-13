@@ -5,3 +5,11 @@ cutpro_mini.license.token.json
 # IDE and build folders
 .claude/
 __pycache__/
+
+# Update system files
+*.backup
+gh_windows_amd64.msi
+
+# dist folder
+dist/cutpro_mini.license.code.txt
+dist/cutpro_mini.license.token.json

@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = ['PIL._tkinter_finder', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'customtkinter', 'PIL', 'PIL.Image', 'cv2', 'inspect', 'pkg_resources', 'importlib_metadata', 'threading', 'subprocess', 'pathlib', 'json', 'requests', 'uuid', 'datetime', 'hashlib', 'urllib3', 'urllib3.util', 'urllib3.util.retry', 'requests.adapters', 'ssl', 'certifi', 'charset_normalizer', 'idna', 'zipfile', 'shutil', 'platform']
+hiddenimports = ['PIL._tkinter_finder', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'customtkinter', 'PIL', 'PIL.Image', 'cv2', 'inspect', 'pkg_resources', 'importlib_metadata', 'threading', 'subprocess', 'pathlib', 'json', 'requests', 'uuid', 'datetime', 'hashlib', 'urllib3', 'urllib3.util', 'urllib3.util.retry', 'requests.adapters', 'ssl', 'certifi', 'charset_normalizer', 'idna', 'zipfile', 'shutil', 'platform', 'packaging', 'packaging.version', 'packaging.specifiers', 'packaging.requirements', 'updater', 'tempfile']
 hiddenimports += collect_submodules('urllib3')
 hiddenimports += collect_submodules('customtkinter')
 hiddenimports += collect_submodules('PIL')
@@ -11,7 +11,7 @@ a = Analysis(
     ['auto.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.png', '.'), ('icon.ico', '.')],
+    datas=[('icon.png', '.'), ('icon.ico', '.'), ('version.txt', '.'), ('updater.py', '.')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
