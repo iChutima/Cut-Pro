@@ -4,9 +4,12 @@ auto copy.py
 updater.py
 update_integration_example.py
 CutPro.spec
-version.txt
 test_update.py
 create_release_instructions.md
+
+# Version and License Files (Keep Private - Hidden)
+version.txt
+cutpro_mini.license.token.json
 
 # Build Files
 build/
