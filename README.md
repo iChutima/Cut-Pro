@@ -1,19 +1,25 @@
-# Cut Pro - Mini Tool 🎬
+# Cut Pro v1.7.0 🎬
 
-**Licensed Professional Video Editing Tool** - Complete with server-based license protection, perfect centering, auto folders, and custom naming.
+**Professional Video Editing Tool** - Ready-to-use executable with enhanced features, bug fixes, and optimized performance.
 
-## 🔐 **License System**
-- **Server-based validation** - Secure license activation required
-- **One license per PC** - MAC address binding prevents sharing
-- **Remembered license keys** - Enter once, activate each session
-- **Auto-closing success dialogs** - Professional user experience
+## 📦 **Download & Run**
+1. **Download**: `CutPro.exe` (~205 MB)
+2. **Run**: Double-click to start
+3. **Activate**: Enter your license key and click "Activate"
 
-## 🚀 **Quick Start**
-```bash
-pip install -r requirements.txt
-python auto.py
-```
 **⚠️ Note**: Internet connection required for license activation
+
+## 🆕 **What's New in v1.7.0**
+### **🐛 Bug Fixes**:
+- ✅ **Fixed 2K Resolution** - Now properly uses 2560x1440 (was using incorrect dimensions)
+- ✅ **Fixed Process Worker** - Eliminated undefined variable errors during processing
+- ✅ **Fixed Activation Flow** - Status messages instead of blocking dialogs
+- ✅ **Protected Activate Button** - Always remains clickable when needed
+
+### **⚡ Performance Improvements**:
+- ✅ **Optimized File Size** - Reduced from 297MB to 205MB
+- ✅ **Faster Startup** - Removed unnecessary dependencies
+- ✅ **Better Memory Usage** - Streamlined processing
 
 ## ✨ **Mini Tool Interface** (700×550 - Centered on Screen)
 
@@ -232,21 +238,22 @@ D:/MyVideo/Short-1/8/
 - **Internet connection** - Required for license activation
 - **Windows/macOS/Linux** - Cross-platform compatibility
 
-## 🔧 **Building Executable**:
-```bash
-# Run the automated build script
-setup.bat    # Windows
-# Creates CutPro.exe in dist/ folder
-```
-
 ## 📄 **License Information**:
 - **Product ID**: `cutpro-mini`
 - **License Server**: `https://license-server-pro.vercel.app/`
 - **Machine Binding**: MAC address based (one PC per license)
 - **Activation**: Required each session, but license key remembered
 
-**Licensed, professional, intelligent, and perfectly positioned!** 🎬✨🔐
+## 📋 **Version History**:
+- **v1.7.0** - Bug fixes, 2K resolution fix, optimized size (205MB)
+- **v1.6.0** - Qt dialogs, multi-folder support, enhanced UI
+- **v1.5.0** - Version display improvements, update system
+- **v1.4.0** - Professional update system with progress tracking
 
----
+## 🎯 **Ready to Use**:
+1. **Download** `CutPro.exe` from releases
+2. **Run** the executable
+3. **Activate** with your license key
+4. **Start editing** videos professionally!
 
-**Ready**: `python auto.py` → Activate License → Start Editing! 🚀
+**Licensed, professional, optimized, and ready to go!** 🎬✨🚀
